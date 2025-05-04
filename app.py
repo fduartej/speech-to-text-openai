@@ -18,18 +18,23 @@ initialize_session_state()
 
 st.title("Chatbot 🤖, Asistente Virtual de Calidda")
 
-# Create footer container for the microphone
+# Create footer container for the microphone and text input
 footer_container = st.container()
 with footer_container:
-    audio_bytes = audio_recorder()
+    col1, col2 = st.columns([2, 1.5])  # Adjusted column proportions
+    with col1:
+        user_input = st.text_input("Escribe tu pregunta aquí:", "")
+    with col2:
+        audio_bytes = audio_recorder()
 
+# Process text input
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.write(user_input)
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
-
+# Process audio input
 if audio_bytes:
-    # Write the audio bytes to a file
     with st.spinner("Transcribing..."):
         webm_file_path = "temp_audio.mp3"
         with open(webm_file_path, "wb") as f:
@@ -42,15 +47,15 @@ if audio_bytes:
                 st.write(transcript)
             os.remove(webm_file_path)
 
+# Generate assistant response if the last message is from the user
 if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
         with st.spinner("Thinking🤔..."):
-            #final_response = get_answer(st.session_state.messages)
-            final_response = invoke_chain(transcript, st.session_state.messages)
-        with st.spinner("Generating audio response..."):    
+            last_user_message = st.session_state.messages[-1]["content"]
+            final_response = invoke_chain(last_user_message, st.session_state.messages)
+        with st.spinner("Generating audio response..."):
             audio_file = text_to_speech(final_response)
             autoplay_audio(audio_file)
-        #st.write(final_response)
         st.markdown(final_response)
         st.session_state.messages.append({"role": "assistant", "content": final_response})
         os.remove(audio_file)

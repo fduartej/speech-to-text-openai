@@ -61,8 +61,8 @@ def invoke_chain(question, messages):
     response = chain.invoke({"query": question, "top_k": 3, "messages": history.messages})
     
     # Limpiar la consulta SQL generada
-    sql_query = response.get('SQLQuery', 'No SQL Query found')
-    sql_query = sql_query.replace("```sql", "").replace("```", "").strip()
+    # sql_query = response.get('SQLQuery', 'No SQL Query found')
+    # sql_query = sql_query.replace("```sql", "").replace("```", "").strip()
     
     # Imprimir la consulta SQL generada
     print(f"Generated SQL Query: {response.get('SQLQuery', 'No SQL Query found')}")
